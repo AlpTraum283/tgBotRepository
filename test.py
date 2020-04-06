@@ -1,13 +1,9 @@
 import config
+import functions
 import telebot
-from PIL import Image
+from telebot import types
 
 bot = telebot.TeleBot(config.token)
-
-@bot.message_handler(content_types=["text"])
-def repeat_all_messages(message): 
-    bot.send_message(message.chat.id, message.text)
-
 
 @bot.message_handler(content_types=['photo'])
 def photo(message):
@@ -21,15 +17,22 @@ def photo(message):
     with open("image.jpg", 'wb') as new_file:
         new_file.write(downloaded_file)
     
-    image = Image.open('image.jpg')
-    rotated_image = image.rotate(90, expand = True)
-    rotated_image.save('rotated_image.jpg', quality = 100)
-    rtrn_image = open('rotated_image.jpg', 'rb')
+    markup = types.ReplyKeyboardMarkup()
+    buttons = functions.btnList.keys()
+    markup.row(*buttons)
+    bot.send_message(message.chat.id, "Выберите, что сделать с фото", reply_markup=markup)
+
+@bot.message_handler(content_types=["text"])
+def editImage(message): 
+    functionName = functions.btnList.get(message.text, "")
+    fileName = getattr(functions, functionName)()
+    rtrn_image = open(fileName, 'rb')
     bot.send_photo(message.chat.id, rtrn_image)
+    # bot.send_message(message.chat.id, functionName)
 
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
 
 
-file_id = 'AAAaaaZZZzzz'
-tb.send_photo(chat_id, file_id)
+# file_id = 'AAAaaaZZZzzz'
+# tb.send_photo(chat_id, file_id)
