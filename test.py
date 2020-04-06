@@ -25,7 +25,7 @@ def photo(message):
 @bot.message_handler(content_types=["text"])
 def editImage(message): 
     functionName = functions.btnList.get(message.text, "")
-    fileName = getattr(functions, functionName)()
+    fileName = getattr(functions, functionName)('image.jpg')
     rtrn_image = open(fileName, 'rb')
     bot.send_photo(message.chat.id, rtrn_image)
     # bot.send_message(message.chat.id, functionName)
