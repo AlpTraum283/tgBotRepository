@@ -2,6 +2,8 @@ import config
 import functions
 import telebot
 from telebot import types
+import os
+import time
 
 bot = telebot.TeleBot(config.token)
 
@@ -14,7 +16,13 @@ def photo(message):
    # print('file.file_path =', file_info.file_path)
     downloaded_file = bot.download_file(file_info.file_path)
 
-    with open("image.jpg", 'wb') as new_file:
+    chat_ID = message.chat.id
+    #print(chat_ID)
+    # image_name - переменная, в которой хранится имя для изображения, включая id чата
+    image_name = (str(chat_ID) + ".jpg") 
+    #print(image_name)
+
+    with open(image_name, 'wb') as new_file:
         new_file.write(downloaded_file)
     
     markup = types.ReplyKeyboardMarkup()
@@ -24,11 +32,22 @@ def photo(message):
 
 @bot.message_handler(content_types=["text"])
 def editImage(message): 
+    chat_ID = message.chat.id
+    image_name = (str(chat_ID) + ".jpg")
+     
     functionName = functions.btnList.get(message.text, "")
-    fileName = getattr(functions, functionName)('image.jpg')
+    fileName = getattr(functions, functionName)(image_name, chat_ID)
     rtrn_image = open(fileName, 'rb')
     bot.send_photo(message.chat.id, rtrn_image)
     # bot.send_message(message.chat.id, functionName)
+
+    #time.sleep(5)
+    # Блок закрытия всех открытых ранее изображений
+    rtrn_image.close()
+
+    # Блок удаления изображений, исходника и обработанного
+    os.remove(image_name)
+    os.remove(fileName)
 
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
